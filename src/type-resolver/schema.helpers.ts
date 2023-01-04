@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { SimplifyDeep } from "type-fest/source/merge-deep"
 
 import { SchemaContent, SchemaParameter, SchemaResponses, Schemas } from "../types"
