@@ -1,0 +1,52 @@
+{
+  "name": "openapi-schema-tools",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "rollup --config",
+    "test": "CI=true react-scripts test",
+    "test:coverage": "react-scripts test --coverage"
+  },
+  "dependencies": {
+    "@readme/openapi-parser": "^2.4.0",
+    "lodash": "^4.17.21",
+    "ts-essentials": "^9.3.0",
+    "type-fest": "^3.5.0",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@ampproject/rollup-plugin-closure-compiler": "^0.27.0",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/jest": "^29.2.5",
+    "@types/lodash": "^4.14.191",
+    "@types/react": "^18.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.39.0",
+    "@typescript-eslint/parser": "^5.39.0",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "husky": "^8.0.3",
+    "rollup": "^2.77.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrameMuse/openapi-schema-tools.git"
+  },
+  "keywords": [],
+  "author": "FrameMuse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FrameMuse/openapi-schema-tools/issues"
+  },
+  "homepage": "https://github.com/FrameMuse/openapi-schema-tools#readme"
+}
