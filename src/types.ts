@@ -1,4 +1,4 @@
-export interface Schema3 extends SchemaDefault {
+export interface SchemaAny extends SchemaDefault {
   type?: "array" | "object" | "boolean" | "number" | "integer" | "string"
   items?: Schema
   properties?: Record<string, Schema>
@@ -137,7 +137,7 @@ export interface SchemaDefault {
 
 export type Schema = SchemaArray | SchemaObject | SchemaNumber | SchemaString | SchemaBoolean | SchemaRef | SchemaAllOf | SchemaAnyOf | SchemaOneOf
 
-export interface Parameter {
+export interface SchemaParameter {
   name: string
   in: "path" | "query"
   required?: boolean
@@ -147,37 +147,29 @@ export interface Parameter {
   description?: string
 }
 
-export type PathMethod = Record<string, {
+export type SchemaPathMethods = Record<string, {
   description?: string
-  parameters?: Parameter[]
-  requestBody?: {
-    content: Record<string, { schema: Schema }>
-  }
+  parameters?: SchemaParameter[]
+  requestBody?: SchemaContent
   responses: Record<string, {
     content?: Record<string, { schema: Schema }>
     description?: string | null
   }>
 }>
 
-export type Paths = Record<string, PathMethod>
+export type Paths = Record<string, SchemaPathMethods>
 export type Schemas = Record<string, Schema>
-
-export type PathArgs = Record<string, Omit<Parameter, "required" | "schema"> & { required: boolean, schemaType: string }>
 
 export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS"
 
 // Samples (for extending)
 
-export interface OkResponseSample {
-  responses: Record<string | number, ContentSample>
+export interface SchemaResponses<K extends string | number = string | number> {
+  responses: Record<K, SchemaContent>
 }
 
-export interface ContentSample {
-  content: {
-    "application/json": {
-      schema: Schema
-    }
-  }
+export interface SchemaContent<K extends string = string> {
+  content: Record<K, { schema: Schema }>
 }
 
 export interface SwaggerDocs {
@@ -186,15 +178,5 @@ export interface SwaggerDocs {
   components: {
     schemas: Schemas
     // securitySchemes: Schemas
-  }
-}
-
-
-
-export class UnreachableCodeError extends Error {
-  constructor(details: unknown) {
-    super("Unreachable code reached with these details: " + String(details))
-
-    this.name = UnreachableCodeError.name
   }
 }

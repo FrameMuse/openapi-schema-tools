@@ -5,7 +5,8 @@ import { z, ZodType, ZodTypeAny } from "zod"
 import SchemaContext from "./SchemaContext"
 import SchemaMocker from "./SchemaMocker"
 import ResolveSchema from "./type-resolver/resolver"
-import { Schema, UnreachableCodeError } from "./types"
+import { Schema } from "./types"
+import UnreachableCodeError from "./UnreachableCodeError"
 
 class SchemaView<T extends ValueOf<Context> | Schema, Context extends Record<string, Schema>> {
   private context: SchemaContext<Context>

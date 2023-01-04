@@ -7,9 +7,8 @@
       "ESNext",
     ],
     // 
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
+    "disableSizeLimit": true,
     // 
     "allowJs": false,
     "skipLibCheck": true,

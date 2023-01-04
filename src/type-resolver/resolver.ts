@@ -3,7 +3,7 @@ import { SetRequired, UnionToIntersection } from "type-fest"
 import { SimplifyDeep } from "type-fest/source/merge-deep"
 
 import { ArrayType, DeRefSchema } from "../helpers"
-import { Schema, Schema3, SchemaRef } from "../types"
+import { Schema, SchemaAny, SchemaRef } from "../types"
 
 // Schema parser
 
@@ -33,7 +33,12 @@ import { Schema, Schema3, SchemaRef } from "../types"
 
 
 
-type ResolveSchema<S extends Schema3, Context extends Record<string, Schema> = {}> =
+/**
+ * Resolves **OpenAPI JSON Schema**.
+ * 
+ * To resolve `Schema` you may need a context if there are any `$ref`'s.
+ */
+type ResolveSchema<S extends SchemaAny, Context extends Record<string, Schema> = {}> =
   S["type"] extends "string" ? string
   : S["type"] extends ("number" | "integer") ? number
   : S["type"] extends "boolean" ? boolean

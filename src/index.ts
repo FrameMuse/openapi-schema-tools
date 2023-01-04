@@ -3,4 +3,8 @@ export { default as SchemaMocker } from "./SchemaMocker"
 export { default as SchemaParser } from "./SchemaParser"
 export { default as SchemaValidator } from "./SchemaValidator"
 
-export type { default as SchemaResolve } from "./type-resolver/resolver"
+
+export * from "./types"
+export * from "./type-resolver/schema.helpers"
+
+export type { default as ResolveSchema } from "./type-resolver/resolver"

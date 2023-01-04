@@ -1,7 +1,8 @@
 import _ from "lodash"
 
 import SchemaContext from "./SchemaContext"
-import { Schema, UnreachableCodeError } from "./types"
+import { Schema } from "./types"
+import UnreachableCodeError from "./UnreachableCodeError"
 
 interface Replacement {
   string?: (() => string) | string

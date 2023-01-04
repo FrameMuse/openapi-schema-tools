@@ -4,7 +4,7 @@ import { ZodArray, ZodBoolean, ZodNever, ZodNumber, ZodObject, ZodString } from 
 
 import SchemaView from "./SchemaView"
 import { SchemaSampleJson } from "./type-resolver/schema.json"
-import { UnreachableCodeError } from "./types"
+import UnreachableCodeError from "./UnreachableCodeError"
 
 describe("SchemaView", () => {
   test("parse()", () => {
