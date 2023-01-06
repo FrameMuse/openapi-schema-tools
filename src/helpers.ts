@@ -1,7 +1,7 @@
 // Helpers
 
 
-import { Schema, SchemaRef } from "./types"
+import { SchemaRef, Schemas } from "./types"
 
 /**
  * https://stackoverflow.com/questions/56687668/a-way-to-disable-type-argument-inference-in-generics
@@ -22,7 +22,7 @@ export type ArrayType<T> = T extends (infer I)[] ? I : never
 
 // export type IfNullable<S> = S extends SchemaDefault ? (S["nullable"] extends true ? null : never) : never
 export type ExtractNameFromRef<P> = P extends `#/components/schemas/${infer T}` ? T : never
-export type DeRefSchema<S extends SchemaRef, Context extends Record<string, Schema>> = Context[ExtractNameFromRef<S["$ref"]>]
+export type DeRefSchema<S extends SchemaRef, Context> = Context extends Schemas ? Context[ExtractNameFromRef<S["$ref"]>] : never
 
 // export type GetSchemaByRef<Ref extends string, Schemas extends Record<string, Schema>> = Schemas[ExtractNameFromRef<Ref>]
 

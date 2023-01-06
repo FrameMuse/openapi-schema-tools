@@ -1,6 +1,7 @@
 import _ from "lodash"
 
 import SchemaContext from "./SchemaContext"
+import ResolveSchema from "./type-resolver/resolver"
 import { Schema } from "./types"
 import UnreachableCodeError from "./UnreachableCodeError"
 
@@ -11,18 +12,12 @@ interface Replacement {
   arraySize?: (() => number) | number
 }
 
-class SchemaMocker<Context extends Record<string, Schema>> {
-  private context: SchemaContext<Context>
-
-  public static DEFAULT_REPLACEMENT: Replacement = {
+class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaContext<Context> {
+  public static DEFAULT_REPLACEMENT = {
     string: "[missing value]",
     number: -1,
     boolean: () => Boolean(_.random(0, 1)),
     arraySize: () => _.random(1, 5)
-  }
-
-  constructor(context?: Context) {
-    this.context = new SchemaContext(context)
   }
 
   private applyReplacement(replacement: unknown) {
@@ -33,11 +28,11 @@ class SchemaMocker<Context extends Record<string, Schema>> {
     return replacement
   }
 
-  public mock(baseSchema: Schema, replacement: Replacement = SchemaMocker.DEFAULT_REPLACEMENT): unknown {
-    const mock = (schema: Schema, replacement: Replacement): unknown => {
-      if ("$ref" in schema) {
-        const deRefedSchema = this.context.deRef(schema)
-        if (deRefedSchema === baseSchema) {
+  public mock<S extends Schema>(schema: S, replacement: Replacement = SchemaMocker.DEFAULT_REPLACEMENT): ResolveSchema<S, Context> {
+    const mock = (nextSchema: Schema, replacement: Replacement): unknown => {
+      if ("$ref" in nextSchema) {
+        const deRefedSchema: Schema = this.deRef(nextSchema)
+        if (deRefedSchema === schema) {
           return null
         }
 
@@ -45,8 +40,8 @@ class SchemaMocker<Context extends Record<string, Schema>> {
         return mockedSchema
       }
 
-      if ("allOf" in schema) {
-        return schema.allOf.reduce((result, nextSchema) => {
+      if ("allOf" in nextSchema) {
+        return nextSchema.allOf.reduce((result, nextSchema) => {
           const mockedSchema = mock(nextSchema, replacement)
           if (!(mockedSchema instanceof Object)) {
             return result
@@ -56,8 +51,8 @@ class SchemaMocker<Context extends Record<string, Schema>> {
         }, {})
       }
 
-      if ("anyOf" in schema || "oneOf" in schema) {
-        const oneOf = "oneOf" in schema ? schema.oneOf : schema.anyOf
+      if ("anyOf" in nextSchema || "oneOf" in nextSchema) {
+        const oneOf = "oneOf" in nextSchema ? nextSchema.oneOf : nextSchema.anyOf
 
         const arrayIndex = _.random(0, oneOf.length - 1)
         const arrayItem = oneOf[arrayIndex]
@@ -70,11 +65,11 @@ class SchemaMocker<Context extends Record<string, Schema>> {
       }
 
 
-      if (schema.default) {
-        return schema.default
+      if (nextSchema.default) {
+        return nextSchema.default
       }
 
-      switch (schema.type) {
+      switch (nextSchema.type) {
         case "string":
           return this.applyReplacement(replacement.string)
 
@@ -86,12 +81,12 @@ class SchemaMocker<Context extends Record<string, Schema>> {
           return this.applyReplacement(replacement.boolean)
 
         case "array": {
-          if (schema.items == null) {
+          if (nextSchema.items == null) {
             return []
           }
 
           const arraySize = this.applyReplacement(replacement.arraySize)
-          const arrayItemsMocked = mock(schema.items, replacement)
+          const arrayItemsMocked = mock(nextSchema.items, replacement)
           if (arrayItemsMocked == null) {
             return Array(arraySize)
           }
@@ -100,12 +95,12 @@ class SchemaMocker<Context extends Record<string, Schema>> {
         }
 
         case "object": {
-          if (schema.properties == null) {
+          if (nextSchema.properties == null) {
             return {}
           }
 
-          const properties = _.mapValues(schema.properties, value => mock(value, replacement))
-          const additionalProperties = _.mapValues(schema.additionalProperties, value => mock(value, replacement))
+          const properties = _.mapValues(nextSchema.properties, value => mock(value, replacement))
+          const additionalProperties = _.mapValues(nextSchema.additionalProperties, value => mock(value, replacement))
 
           return {
             ...properties,
@@ -114,11 +109,11 @@ class SchemaMocker<Context extends Record<string, Schema>> {
         }
 
         default:
-          throw new UnreachableCodeError({ schema })
+          throw new UnreachableCodeError({ schema: nextSchema })
       }
     }
 
-    return mock(baseSchema, replacement)
+    return mock(schema, replacement) as never
   }
 
   private never(schema: Schema) {
