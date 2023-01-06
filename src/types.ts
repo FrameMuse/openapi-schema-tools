@@ -164,12 +164,16 @@ export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE"
 
 // Samples (for extending)
 
-export interface SchemaResponses<K extends string | number = string | number> {
-  responses: Record<K, SchemaContent>
+export interface SchemaRequest {
+  requestBody: SchemaContent
 }
 
 export interface SchemaContent<K extends string = string> {
   content: Record<K, { schema: Schema }>
+}
+
+export interface SchemaResponses<K extends string | number = string | number> {
+  responses: Record<K, SchemaContent>
 }
 
 export interface SwaggerDocs {
