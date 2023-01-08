@@ -13,7 +13,7 @@ class SchemaContext<Context extends Schemas = {}> {
   }
 
   /**
-   * Get a schema by its name in the given context.
+   * Retrieves schema by its name in the context.
    */
   public getByName<K extends keyof Context>(key: K): Context[K] {
     return SchemaContext.getByName(key, this.context)
