@@ -45,9 +45,9 @@ type ResolveSchema<S extends SchemaAny, Context extends Record<string, Schema> =
   : S["type"] extends "object" ? (
     S["properties"] extends {} ? SimplifyDeep<(
       SetRequired<{ [K in keyof S["properties"]]?: ResolveSchema<S["properties"][K], Context> }, ArrayType<S["required"]>>
-    ) & S["default"]>
+    )>
     : {}
-  )
+  ) & S["default"]
 
   : S extends ({ $ref: string }) ? ResolveSchema<DeRefSchema<S, Context>, Context>
   : S extends ({ anyOf: SchemaRef[] }) ? ResolveSchema<ArrayType<S["anyOf"]>, Context>
@@ -66,3 +66,4 @@ const __ResolveSchema_Boolean__TEST__: ResolveSchema<{ type: "boolean" }> = true
 
 const __ResolveSchema_Array__TEST__: ResolveSchema<{ type: "array", items: { type: "object", properties: { foo: { type: "string" } } } }> = [{ foo: "" }]
 const __ResolveSchema_Object__TEST__: ResolveSchema<{ type: "object", properties: { foo: { type: "string" } } }> = { foo: "" }
+const __ResolveSchema_Object_Default__TEST__: ResolveSchema<{ type: "object", default: { foo: { bar: "something" } } }> = { foo: { bar: "something" } }
