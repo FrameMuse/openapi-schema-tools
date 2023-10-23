@@ -1,10 +1,10 @@
-
 import { performance } from "node:perf_hooks"
 
 import { ZodArray, ZodBoolean, ZodNever, ZodNumber, ZodObject, ZodString } from "zod"
 
-import SchemaConverter from "./SchemaConverter"
-import { SchemaSampleJson } from "./type-resolver/schema.json"
+import SchemaConverter from "../SchemaConverter"
+import SchemaDocs from "../SchemaDocs"
+import { SchemaSampleJson } from "./schema.json"
 
 describe("SchemaConverter", () => {
   // test("parse()", () => {
@@ -62,14 +62,12 @@ describe("SchemaConverter", () => {
       expect((converter.toZod({ type: "object", properties: { test: { type: "string" } } }) as ZodObject<{ test: ZodString }>).shape.test).toBeInstanceOf(ZodString)
     })
 
-    // test("Unreachable code", () => {
-    //   expect(() => new SchemaView({} as never)).toThrowError(UnreachableCodeError)
-    // })
-
     describe("General Perfomance", () => {
       test("Single run (< 1 ms)", () => {
-        const context = SchemaSampleJson.components.schemas
+        const schemaDocs = new SchemaDocs(SchemaSampleJson)
+        const context = schemaDocs.components.schemas
         const converter = new SchemaConverter(context)
+        
 
         performance.mark("start")
         converter.toZod(context.BlogListComment)
@@ -80,7 +78,8 @@ describe("SchemaConverter", () => {
       })
 
       test("Multiple runs (< 10 ms)", () => {
-        const context = SchemaSampleJson.components.schemas
+        const schemaDocs = new SchemaDocs(SchemaSampleJson)
+        const context = schemaDocs.components.schemas
         const converter = new SchemaConverter(context)
 
         performance.mark("start")

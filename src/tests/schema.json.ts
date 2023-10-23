@@ -1,7 +1,4 @@
-import { DeepWritable } from "ts-essentials"
-
-
-const _SchemaSampleJson = {
+export const SchemaSampleJson = {
   "openapi": "3.0.3",
   "paths": {
     "/__docs__/": {
@@ -7108,5 +7105,3 @@ const _SchemaSampleJson = {
     }
   }
 } as const
-
-export const SchemaSampleJson = _SchemaSampleJson as DeepWritable<typeof _SchemaSampleJson>

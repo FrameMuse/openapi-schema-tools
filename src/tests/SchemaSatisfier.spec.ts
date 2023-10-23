@@ -1,8 +1,25 @@
 import { ZodError } from "zod"
 
-import SchemaMocker from "./SchemaMocker"
-import SchemaSatisfier from "./SchemaSatisfier"
-import { Schema } from "./types"
+import SchemaMocker from "../SchemaMocker"
+import SchemaSatisfier from "../SchemaSatisfier"
+import { Schema } from "../types"
+
+/**
+ * Helps prevent error logs blowing up as a result of expecting an error to be thrown,
+ * when using a library (such as enzyme)
+ *
+ * @param fn Function that you would normally pass to `expect(func).toThrow()`
+ */
+export function expectToThrow(fn: () => unknown, error?: Parameters<jest.Matchers<void>["toThrow"]>[0]): void {
+  // Even though the error is caught, it still gets printed to the console
+  // so we mock that out to avoid the wall of red text.
+  const spy = jest.spyOn(console, "error")
+  spy.mockImplementation(() => void 0)
+
+  expect(fn).toThrow(error)
+
+  spy.mockRestore()
+}
 
 describe("SchemaParser", () => {
   describe("parse()", () => {
@@ -10,7 +27,7 @@ describe("SchemaParser", () => {
       const schemaParser = new SchemaSatisfier()
       const schemaSample = { type: "object", properties: { b: { type: "string" } } } as const
 
-      expect(() => schemaParser.required({ a: 1 }, schemaSample)).toThrowError(ZodError)
+      expectToThrow(() => schemaParser.required({ a: 1 }, schemaSample), ZodError)
     })
 
     test("Success", () => {
@@ -67,7 +84,9 @@ describe("SchemaParser", () => {
         items: { type: "object", properties: { b: { type: "string" } }, required: ["b"] }
       }
 
-      expect(schemaParser.mocked({ a: 1 }, schemaSample)).toContainEqual({ b: SchemaMocker.DEFAULT_REPLACEMENT.string })
+      schemaParser.mocked({ a: 1 }, schemaSample).forEach(parsedValue => {
+        expect(parsedValue).toEqual({ b: SchemaMocker.DEFAULT_REPLACEMENT.string })
+      })
     })
 
     test("3", () => {
@@ -77,7 +96,9 @@ describe("SchemaParser", () => {
         items: { type: "object", properties: { b: { type: "string" } }, required: ["b"] }
       }
 
-      expect(schemaParser.mocked([{ a: 1 }], schemaSample)).toContainEqual({ b: SchemaMocker.DEFAULT_REPLACEMENT.string })
+      schemaParser.mocked([{ a: 1 }], schemaSample).forEach(parsedValue => {
+        expect(parsedValue).toEqual({ b: SchemaMocker.DEFAULT_REPLACEMENT.string })
+      })
     })
   })
 })
