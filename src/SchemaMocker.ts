@@ -1,4 +1,5 @@
-import _ from "lodash"
+
+import { mapValues, random } from "lodash"
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
@@ -16,8 +17,8 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
   public static DEFAULT_REPLACEMENT = {
     string: "[missing value]",
     number: -1,
-    boolean: () => Boolean(_.random(0, 1)),
-    arraySize: () => _.random(1, 5)
+    boolean: () => Boolean(random(0, 1)),
+    arraySize: () => random(1, 5)
   }
 
   private applyReplacement(replacement: unknown) {
@@ -54,7 +55,7 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
       if ("anyOf" in nextSchema || "oneOf" in nextSchema) {
         const oneOf = "oneOf" in nextSchema ? nextSchema.oneOf : nextSchema.anyOf
 
-        const arrayIndex = _.random(0, oneOf.length - 1)
+        const arrayIndex = random(0, oneOf.length - 1)
         const arrayItem = oneOf[arrayIndex]
         if (arrayItem == null) {
           return []
@@ -99,8 +100,8 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
             return {}
           }
 
-          const properties = _.mapValues(nextSchema.properties, value => mock(value, replacement))
-          const additionalProperties = _.mapValues(nextSchema.additionalProperties, value => mock(value, replacement))
+          const properties = mapValues(nextSchema.properties, value => mock(value, replacement))
+          const additionalProperties = mapValues(nextSchema.additionalProperties, value => mock(value, replacement))
 
           return {
             ...properties,

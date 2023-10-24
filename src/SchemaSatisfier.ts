@@ -1,6 +1,6 @@
-import _ from "lodash"
+import { merge } from "lodash"
 import { PartialDeep } from "type-fest"
-import { z, ZodArray, ZodObject, ZodTypeAny } from "zod"
+import { array,ZodArray, ZodObject, ZodTypeAny } from "zod"
 
 import SchemaContext from "./SchemaContext"
 import SchemaConverter from "./SchemaConverter"
@@ -31,7 +31,7 @@ class SchemaSatisfier<Context extends Schemas = {}> extends SchemaContext<Contex
   partial<S extends Schema>(value: unknown, schema: S): PartialDeep<ResolveSchema<S, Context>> {
     function makePartial(zodType: ZodTypeAny): ZodTypeAny {
       if (zodType instanceof ZodArray) {
-        return z.array(makePartial(zodType.element))
+        return array(makePartial(zodType.element))
       }
 
       if (zodType instanceof ZodObject) {
@@ -73,7 +73,7 @@ class SchemaSatisfier<Context extends Schemas = {}> extends SchemaContext<Contex
     const mocked = mocker.mock(schema)
     const partial = this.partial(value, schema)
 
-    return _.merge(mocked, partial)
+    return merge(mocked, partial)
   }
 }
 

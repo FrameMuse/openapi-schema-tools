@@ -1,5 +1,5 @@
-import _ from "lodash"
-import { z, ZodType, ZodTypeAny } from "zod"
+import { mapValues } from "lodash"
+import { array, boolean, intersection, never, number, object, string, union, ZodType, ZodTypeAny } from "zod"
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
@@ -19,7 +19,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
       if ("$ref" in schema) {
         const deRefedSchema: Schema = this.deRef(schema)
         if (deRefedSchema === baseSchema) {
-          return z.never()
+          return never()
         }
 
         return this.toZod(deRefedSchema)
@@ -28,49 +28,49 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
       if ("allOf" in schema) {
         const items = schema.allOf.map(item => toZod(item))
         if (items.length < 2) {
-          return items[0] || z.never()
+          return items[0] || never()
         }
 
-        const intersection = items.slice(1).reduce((result, next) => z.intersection(result, next), items[0] as ZodTypeAny)
-        return intersection
+        const itemsIntersection = items.slice(1).reduce((result, next) => intersection(result, next), items[0] as ZodTypeAny)
+        return itemsIntersection
       }
       if ("anyOf" in schema || "oneOf" in schema) {
         const anyOf = "anyOf" in schema ? schema.anyOf : schema.oneOf
         const items = anyOf.map(item => toZod(item))
         if (items.length < 2) {
-          return items[0] || z.never()
+          return items[0] || never()
         }
 
-        const union = z.union(items as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]])
-        return union
+        const itemsUnion = union(items as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]])
+        return itemsUnion
       }
 
       switch (schema.type) {
         case "string":
-          return z.string()
+          return string()
         case "number":
         case "integer":
-          return z.number()
+          return number()
         case "boolean":
-          return z.boolean()
+          return boolean()
 
         case "array": {
           if (schema.items == null) {
-            return z.array(z.never())
+            return array(never())
           }
 
-          return z.array(toZod(schema.items))
+          return array(toZod(schema.items))
         }
 
         case "object": {
           if (schema.properties == null) {
-            return z.object({})
+            return object({})
           }
 
-          const properties = _.mapValues(schema.properties, toZod)
-          const additionalProperties = _.mapValues(schema.additionalProperties, toZod)
+          const properties = mapValues(schema.properties, toZod)
+          const additionalProperties = mapValues(schema.additionalProperties, toZod)
 
-          return z.object({ ...properties, ...additionalProperties })
+          return object({ ...properties, ...additionalProperties })
         }
 
         default:
