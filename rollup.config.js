@@ -7,6 +7,7 @@ import packageJson from "./package.json"
 const external = Object.keys(packageJson.dependencies)
 
 const config = [{
+  treeshake: true,
   input: "src/index.ts",
   output: [{ file: packageJson.main, format: "cjs", }],
   plugins: [typescript(), compiler()],
