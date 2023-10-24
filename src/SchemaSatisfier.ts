@@ -9,18 +9,24 @@ import ResolveSchema from "./type-resolver/resolver"
 import { Schema, Schemas } from "./types"
 
 class SchemaSatisfier<Context extends Schemas = {}> extends SchemaContext<Context> {
+  schemaConverter: SchemaConverter<Context>
+  
+  constructor(context?: Context, protected options?: { strict?: boolean }) {
+    super(context)
+
+    this.schemaConverter = new SchemaConverter(this.context)
+  }
+  
   /**
-   * If properties differ or unrecognized keys are met, a error will be thrown.
+   * If properties differ or not specified, a error will be thrown.
    */
   required<S extends Schema>(value: unknown, schema: S): ResolveSchema<S, Context> {
-    const schemaConverter = new SchemaConverter(this.context)
-
-    const zodType = schemaConverter.toZod(schema)
+    const zodType = this.schemaConverter.toZod(schema)
     return zodType.parse(value)
   }
 
   /**
-   * Properties that differ and unrecognized keys will be removed.
+   * Properties that differ and not specified will be omitted.
    */
   partial<S extends Schema>(value: unknown, schema: S): PartialDeep<ResolveSchema<S, Context>> {
     function makePartial(zodType: ZodTypeAny): ZodTypeAny {
@@ -58,7 +64,8 @@ class SchemaSatisfier<Context extends Schemas = {}> extends SchemaContext<Contex
   }
 
   /**
-   * Properties that differ will be replaced with a mock. Unrecognized keys will be removed.
+   * Properties that differ will be replaced with a mock.
+   * Properties that are not specified in the schema are omitted.
    */
   mocked<S extends Schema>(value: unknown, schema: S): ResolveSchema<S, Context> {
     const mocker = new SchemaMocker(this.context)

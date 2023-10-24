@@ -7,21 +7,22 @@ import { Schema, Schemas } from "./types"
 import UnreachableCodeError from "./UnreachableCodeError"
 
 class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Context> {
-  toZod<S extends Schema>(schema: S): ZodType<ResolveSchema<S>> {
-    return SchemaConverter.toZod(schema, this.context)
+  constructor(context?: Context, protected options?: { strict?: boolean }) {
+    super(context)
   }
-
-  static toZod<S extends Schema, Context extends Schemas>(baseSchema: S, context?: Context): ZodType<ResolveSchema<S>> {
-    const schemaContext = new SchemaContext(context)
-
+  
+  toZod<S extends Schema>(schema: S): ZodType<ResolveSchema<S>> {
+    // Rename to `baseSchema` to avoid confusion with `schema` parameter.
+    const baseSchema = schema
+    
     const toZod = (schema: Schema): ZodTypeAny => {
       if ("$ref" in schema) {
-        const deRefedSchema: Schema = schemaContext.deRef(schema)
+        const deRefedSchema: Schema = this.deRef(schema)
         if (deRefedSchema === baseSchema) {
           return z.never()
         }
 
-        return this.toZod(deRefedSchema, context)
+        return this.toZod(deRefedSchema)
       }
 
       if ("allOf" in schema) {
@@ -34,8 +35,8 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
         return intersection
       }
       if ("anyOf" in schema || "oneOf" in schema) {
-        const oneOf = "oneOf" in schema ? schema.oneOf : schema.anyOf
-        const items = oneOf.map(item => toZod(item))
+        const anyOf = "anyOf" in schema ? schema.anyOf : schema.oneOf
+        const items = anyOf.map(item => toZod(item))
         if (items.length < 2) {
           return items[0] || z.never()
         }
@@ -66,8 +67,8 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
             return z.object({})
           }
 
-          const properties = _.mapValues(schema.properties, value => toZod(value))
-          const additionalProperties = _.mapValues(schema.additionalProperties, value => toZod(value))
+          const properties = _.mapValues(schema.properties, toZod)
+          const additionalProperties = _.mapValues(schema.additionalProperties, toZod)
 
           return z.object({ ...properties, ...additionalProperties })
         }
@@ -77,6 +78,14 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
       }
     }
     return toZod(baseSchema)
+  }
+
+  /**
+   * Strict mode: 
+   */
+  static toZod<S extends Schema, Context extends Schemas>(schema: S, context?: Context, options?: { strict?: boolean }): ZodType<ResolveSchema<S>> {
+    const schemaConverter = new SchemaConverter(context)
+    return schemaConverter.toZod(schema)
   }
 }
 

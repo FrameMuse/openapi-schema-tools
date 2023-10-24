@@ -7,7 +7,7 @@
       "ESNext",
     ],
     // 
-    "strictPropertyInitialization": false,
+    "strictPropertyInitialization": true,
     "disableSizeLimit": true,
     // 
     "allowJs": false,

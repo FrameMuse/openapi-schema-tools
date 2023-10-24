@@ -12,7 +12,7 @@ export interface SchemaAny extends SchemaDefault {
   anyOf?: Schema[]
   oneOf?: Schema[]
   maxLength?: number
-  format?: "int32" | "float" | "date" | "time" | "date-time" | "uri" | "email"
+  format?: SchemaString["format"] | SchemaNumber["format"]
   minimum?: number
   maximum?: number
 
@@ -44,6 +44,16 @@ export interface SchemaObject extends SchemaDefault {
    */
   required?: string[]
 }
+export interface SchemaObjectLike extends SchemaDefault {
+  type?: "object"
+  properties: Record<string, Schema>
+  additionalProperties?: Record<string, Schema>
+  /**
+   * List of required fields related to `properties` field.
+   * @example ["field1", "field2"]
+   */
+  required?: string[]
+}
 
 export interface SchemaNumber extends SchemaDefault {
   type: "integer" | "number"
@@ -62,7 +72,7 @@ export interface SchemaNumber extends SchemaDefault {
 
 export interface SchemaString extends SchemaDefault {
   type: "string"
-  format?: "date" | "time" | "date-time" | "uri" | "email"
+  format?: "date" | "time" | "date-time" | "uri" | "email" | "binary"
   maxLength?: number
   /**
    * Represents union of possible `string` values.
@@ -135,7 +145,7 @@ export interface SchemaDefault {
   nullable?: boolean
 }
 
-export type Schema = SchemaArray | SchemaObject | SchemaNumber | SchemaString | SchemaBoolean | SchemaRef | SchemaAllOf | SchemaAnyOf | SchemaOneOf
+export type Schema = SchemaArray | (SchemaObject | SchemaObjectLike) | SchemaNumber | SchemaString | SchemaBoolean | SchemaRef | SchemaAllOf | SchemaAnyOf | SchemaOneOf
 
 export interface SchemaParameter {
   name: string
@@ -151,14 +161,14 @@ export type SchemaPathMethods = Record<string, {
   description?: string
   parameters?: SchemaParameter[]
   requestBody?: SchemaContent
-  responses: Record<string, {
-    content?: Record<string, { schema: Schema }>
+  responses?: Record<string, {
+    content?: Record<string, { schema?: Schema }>
     description?: string | null
   }>
 }>
 
-export type Paths = Record<string, SchemaPathMethods>
-export type Schemas = Record<string, Schema>
+export type Paths = Record<keyof never, SchemaPathMethods>
+export type Schemas = Record<keyof never, Schema>
 
 export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS"
 
@@ -181,6 +191,6 @@ export interface SwaggerDocs {
   paths: Paths
   components: {
     schemas: Schemas
-    // securitySchemes: Schemas
+    // securitySchemes?: Schemas
   }
 }
