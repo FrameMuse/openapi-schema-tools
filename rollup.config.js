@@ -1,23 +1,38 @@
-import compiler from "@ampproject/rollup-plugin-closure-compiler"
-import typescript from "@rollup/plugin-typescript"
-import dts from "rollup-plugin-dts"
+import { defineConfig } from "rollup"
+import { swc } from "rollup-plugin-swc3"
 
-import packageJson from "./package.json"
-
-const external = Object.keys(packageJson.dependencies)
-
-const config = [{
+const baseConfig = defineConfig({
   treeshake: true,
-  input: "src/index.ts",
-  output: [{ file: packageJson.main, format: "cjs", }],
-  plugins: [typescript(), compiler()],
-  external,
-},
-{
-  input: "src/index.ts",
-  output: [{ file: packageJson.types, format: "cjs" }],
-  plugins: [dts()],
-  external,
-}]
+  external: [/react.*/, /@swc\/helpers\/.*/, "lodash", "zod"],
+  input: "./src/index.ts",
+  output: {
+    format: "esm",
+    dir: "dist",
+    sourcemap: true,
+    preserveModules: true,
+    exports: "auto"
+  },
+})
+const config = defineConfig([
+  {
+    ...baseConfig,
+    plugins: [
+      swc({
+        jsc: {
+          loose: true,
+          externalHelpers: false,
+          parser: {
+            syntax: "typescript",
+            dynamicImport: true
+          },
+          minify: {
+            sourceMap: true
+          }
+        },
+        minify: true
+      })
+    ]
+  }
+])
 
 export default config
