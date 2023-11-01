@@ -1,6 +1,6 @@
 class UnreachableCodeError extends Error {
   constructor(details: unknown) {
-    super("Unreachable code reached with these details: " + String(details))
+    super("Unreachable code reached with these details: " + JSON.stringify(details))
 
     this.name = UnreachableCodeError.name
   }
