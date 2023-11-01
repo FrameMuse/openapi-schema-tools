@@ -1,4 +1,4 @@
-import { merge } from "lodash"
+import merge from "lodash/merge"
 import { PartialDeep } from "type-fest"
 import { array,ZodArray, ZodObject, ZodTypeAny } from "zod"
 

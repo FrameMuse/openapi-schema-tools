@@ -1,4 +1,4 @@
-import { mapValues } from "lodash"
+import mapValues from "lodash/mapValues"
 import { array, boolean, intersection, never, number, object, string, union, ZodType, ZodTypeAny } from "zod"
 
 import SchemaContext from "./SchemaContext"
