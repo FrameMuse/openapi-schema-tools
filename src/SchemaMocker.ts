@@ -1,6 +1,5 @@
 
-import mapValues from "lodash/mapValues"
-import random from "lodash/random"
+import { mapValues, random } from "lodash-es"
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
