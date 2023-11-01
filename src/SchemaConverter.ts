@@ -3,7 +3,7 @@ import { array, boolean, intersection, never, number, object, string, union, Zod
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
-import { Schema, Schemas } from "./types"
+import { Schema, SchemaObject, SchemaObjectLike, Schemas } from "./types"
 import UnreachableCodeError from "./UnreachableCodeError"
 
 class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Context> {
@@ -45,6 +45,17 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
         return itemsUnion
       }
 
+      if ("properties" in schema) {
+        return handleObject(schema)
+      }
+
+      function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
+        const properties = mapValues(schemaObject.properties, toZod)
+        const additionalProperties = mapValues(schemaObject.additionalProperties, toZod)
+
+        return object({ ...properties, ...additionalProperties })
+      }
+
       switch (schema.type) {
         case "string":
           return string()
@@ -67,10 +78,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
             return object({})
           }
 
-          const properties = mapValues(schema.properties, toZod)
-          const additionalProperties = mapValues(schema.additionalProperties, toZod)
-
-          return object({ ...properties, ...additionalProperties })
+          return handleObject(schema)
         }
 
         default:
@@ -83,7 +91,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
   /**
    * Strict mode: 
    */
-  static toZod<S extends Schema, Context extends Schemas>(schema: S, context?: Context, options?: { strict?: boolean }): ZodType<ResolveSchema<S>> {
+  static toZod<S extends Schema, Context extends Schemas>(schema: S, context?: Context): ZodType<ResolveSchema<S>> {
     const schemaConverter = new SchemaConverter(context)
     return schemaConverter.toZod(schema)
   }
