@@ -14,13 +14,8 @@
     "test:ci": "CI=true react-scripts test",
     "test:coverage": "react-scripts test --coverage"
   },
-  "peerDependencies": {
-    "lodash": "^4.17.21",
-    "type-fest": "^3.7.2",
-    "zod": "^3.20.2"
-  },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "type-fest": "^3.7.2",
     "zod": "^3.20.2"
   },
