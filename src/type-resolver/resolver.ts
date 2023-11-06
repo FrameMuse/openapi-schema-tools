@@ -1,4 +1,5 @@
-import { SetRequired, UnionToIntersection } from "type-fest"
+import { EmptyObject, SetRequired, UnionToIntersection } from "type-fest"
+import { BuiltIns } from "type-fest/source/internal"
 import { SimplifyDeep } from "type-fest/source/merge-deep"
 
 import { ArrayType, DeRefSchema } from "../helpers"
@@ -10,7 +11,7 @@ import { SchemaAny, SchemaRef, Schemas } from "../types"
  * To resolve `Schema` you may need a context if there are any `$ref`'s.
  */
 type ResolveSchema<S extends SchemaAny, Context extends Schemas = {}> =
-  S extends never ? never
+  S extends (EmptyObject | unknown[] | never | BuiltIns) ? never
   : S["type"] extends "string" ? string
   : S["type"] extends ("number" | "integer") ? number
   : S["type"] extends "boolean" ? boolean
@@ -43,3 +44,5 @@ const __ResolveSchema_Never__TEST__: never = {} as ResolveSchema<never>
 const __ResolveSchema_Array__TEST__: ResolveSchema<{ type: "array", items: { type: "object", properties: { foo: { type: "string" } } } }> = [{ foo: "" }]
 const __ResolveSchema_Object__TEST__: ResolveSchema<{ type: "object", properties: { foo: { type: "string" } } }> = { foo: "" }
 const __ResolveSchema_Object_Default__TEST__: ResolveSchema<{ type: "object", default: { foo: { bar: "something" } } }> = { foo: { bar: "something" } }
+
+const __ResolveSchema_Object_EMPTY__TEST__: ResolveSchema<{}> = 1 as never
