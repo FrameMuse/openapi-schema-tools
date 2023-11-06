@@ -18,17 +18,20 @@ type ResolveSchema<S extends SchemaAny, Context extends Schemas = {}> =
 
   : S["type"] extends "array" ? (S["items"] extends object ? ResolveSchema<S["items"], Context>[] : never[])
   : S["type"] extends "object" ? (
-    S["properties"] extends object ? SimplifyDeep<(
-      SetRequired<{ [K in keyof S["properties"]]?: ResolveSchema<S["properties"][K], Context> }, ArrayType<S["required"]>>
-    )>
-    : Record<keyof never, unknown>
+    S["properties"] extends object ? ResolveSchemaObject<S["properties"], ArrayType<S["required"]>, Context> : Record<keyof never, unknown>
   ) & S["default"]
+  : S["properties"] extends object ? ResolveSchemaObject<S["properties"], ArrayType<S["required"]>, Context>
 
   : S extends ({ $ref: string }) ? ResolveSchema<DeRefSchema<S, Context>, Context>
   : S extends ({ anyOf: SchemaRef[] }) ? ResolveSchema<ArrayType<S["anyOf"]>, Context>
   : S extends ({ oneOf: SchemaRef[] }) ? ResolveSchema<ArrayType<S["oneOf"]>, Context>
   : S extends ({ allOf: SchemaRef[] }) ? UnionToIntersection<ResolveSchema<ArrayType<S["allOf"]>, Context>>
   : never
+
+type ResolveSchemaObject<Properties extends Schemas, Required extends keyof Properties, Context extends Schemas = {}> = 
+  SimplifyDeep<(
+    SetRequired<{ [K in keyof Properties]?: ResolveSchema<Properties[K], Context> }, Required>
+  )>
 
 export default ResolveSchema
 
@@ -43,6 +46,7 @@ const __ResolveSchema_Never__TEST__: never = {} as ResolveSchema<never>
 
 const __ResolveSchema_Array__TEST__: ResolveSchema<{ type: "array", items: { type: "object", properties: { foo: { type: "string" } } } }> = [{ foo: "" }]
 const __ResolveSchema_Object__TEST__: ResolveSchema<{ type: "object", properties: { foo: { type: "string" } } }> = { foo: "" }
+const __ResolveSchema_Object_Implicit__TEST__: ResolveSchema<{ properties: { foo: { type: "string" } } }> = { foo: "" }
 const __ResolveSchema_Object_Default__TEST__: ResolveSchema<{ type: "object", default: { foo: { bar: "something" } } }> = { foo: { bar: "something" } }
 
 const __ResolveSchema_Object_EMPTY__TEST__: ResolveSchema<{}> = 1 as never
