@@ -9,7 +9,7 @@ const baseConfig = defineConfig({
     format: "esm",
     dir: "dist",
     sourcemap: true,
-    preserveModules: true,
+    preserveModules: false,
     exports: "auto"
   },
 })
@@ -18,6 +18,7 @@ const config = defineConfig([
     ...baseConfig,
     plugins: [
       swc({
+        sourceMaps: true,
         jsc: {
           loose: true,
           externalHelpers: false,
