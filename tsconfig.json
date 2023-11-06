@@ -9,7 +9,7 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
-    "outFile": "./dist/index.d.ts",
+    "declarationDir": "dist",
     // 
     "strictPropertyInitialization": true,
     "disableSizeLimit": true,

@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && npm run build:rollup && tsc",
+    "build:types": "tsc && tsc-alias --outDir dist",
     "build:rollup": "rollup --config",
     "test": "react-scripts test",
     "test:ci": "CI=true react-scripts test",
