@@ -16,6 +16,7 @@
     "test:ci": "CI=true react-scripts test",
     "test:coverage": "react-scripts test --coverage"
   },
+  "sideEffects": false,
   "dependencies": {
     "lodash-es": "^4.17.21",
     "type-fest": "^3.7.2",
