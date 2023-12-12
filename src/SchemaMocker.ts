@@ -3,7 +3,7 @@ import { mapValues, random } from "lodash-es"
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
-import { Schema } from "./types"
+import { Schema, SchemaObject, SchemaObjectLike } from "./types"
 import UnreachableCodeError from "./UnreachableCodeError"
 
 interface Replacement {
@@ -70,6 +70,20 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
         return nextSchema.default
       }
 
+      if ("properties" in schema) {
+        return handleObject(schema)
+      }
+
+      function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
+        const properties = mapValues(schemaObject.properties, value => mock(value, replacement))
+        const additionalProperties = mapValues(schemaObject.additionalProperties, value => mock(value, replacement))
+
+        return {
+          ...properties,
+          ...additionalProperties
+        }
+      }
+
       switch (nextSchema.type) {
         case "string":
           return this.applyReplacement(replacement.string)
@@ -100,13 +114,7 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
             return {}
           }
 
-          const properties = mapValues(nextSchema.properties, value => mock(value, replacement))
-          const additionalProperties = mapValues(nextSchema.additionalProperties, value => mock(value, replacement))
-
-          return {
-            ...properties,
-            ...additionalProperties
-          }
+          return handleObject(nextSchema)
         }
 
         default:
