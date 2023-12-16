@@ -70,8 +70,8 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
         return nextSchema.default
       }
 
-      if ("properties" in schema) {
-        return handleObject(schema)
+      if ("properties" in nextSchema) {
+        return handleObject(nextSchema)
       }
 
       function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
