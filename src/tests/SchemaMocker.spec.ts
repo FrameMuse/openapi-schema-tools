@@ -1,5 +1,5 @@
 import SchemaMocker from "../SchemaMocker"
-import { Schema } from "../types"
+import { SchemaSampleJson } from "./schema.json"
 
 /**
  * Helps prevent error logs blowing up as a result of expecting an error to be thrown,
@@ -21,13 +21,20 @@ export function expectToThrow(fn: () => unknown, error?: Parameters<jest.Matcher
 describe("SchemaMocker", () => {
   describe("mock()", () => {
     test("1", () => {
-      const schemaMocker = new SchemaMocker()
-      const schemaSample = { type: "object", properties: { b: { type: "string" }, schemaSample: {} as Schema }, required: ["b"] } satisfies Schema
-      schemaSample.properties.schemaSample = schemaSample
+      const schemaMocker = new SchemaMocker(SchemaSampleJson.components.schemas as never)
 
-      expect(schemaMocker.mock(schemaSample)).toEqual({
-        b: SchemaMocker.DEFAULT_REPLACEMENT.string,
-        schemaSample: null
+      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.BlogListComment as never)).toEqual({
+        author: {
+          avatar: "[missing value]",
+          first_name: "[missing value]",
+          id: -1,
+          last_name: "[missing value]",
+        },
+        created_at: "[missing value]",
+        id: -1,
+        is_deleted: false,
+        replies: [],
+        text: "[missing value]",
       })
     })
   })
