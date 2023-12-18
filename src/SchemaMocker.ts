@@ -14,6 +14,8 @@ interface Replacement {
 }
 
 class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaContext<Context> {
+  // private static seenSchemas: WeakSet<Schema> = new WeakSet
+
   public static DEFAULT_REPLACEMENT = {
     string: "[missing value]",
     number: -1,
@@ -30,7 +32,13 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
   }
 
   public mock<S extends Schema>(schema: S, replacement: Replacement = SchemaMocker.DEFAULT_REPLACEMENT): ResolveSchema<S, Context> {
+    const seenSchemas: WeakSet<Schema> = new WeakSet
+
     const mock = (nextSchema: Schema, replacement: Replacement): unknown => {
+      if (seenSchemas.has(nextSchema)) return null
+      if (!seenSchemas.has(nextSchema)) seenSchemas.add(nextSchema)
+
+
       if ("$ref" in nextSchema) {
         const deRefedSchema: Schema = this.deRef(nextSchema)
         if (deRefedSchema === schema) {
