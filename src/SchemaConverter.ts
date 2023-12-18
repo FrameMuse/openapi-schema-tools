@@ -20,7 +20,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
 
         const deRefedSchema: Schema = this.deRef(schema)
 
-        const refZodSchema = custom((...args) => toZod(deRefedSchema, seenRefs).parse(...args))
+        const refZodSchema = custom((...args) => toZod(deRefedSchema, seenRefs).nullish().parse(...args)).nullish()
         seenRefs.set(schema.$ref, refZodSchema)
         return refZodSchema
       }

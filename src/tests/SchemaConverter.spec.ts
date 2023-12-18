@@ -84,8 +84,11 @@ describe("SchemaConverter", () => {
         text: DEFAULT.string,
       }
 
-      const parsedValue = schemaConverted.parse({ ...expected, replies: [expected] })
-      expect(parsedValue).toEqual(parsedValue)
+      const parsedValue1 = schemaConverted.parse({ ...expected, replies: [expected] })
+      expect(parsedValue1).toEqual(parsedValue1)
+
+      const parsedValue2 = schemaConverted.parse({ ...expected, replies: undefined })
+      expect(parsedValue2).toEqual(parsedValue2)
     })
 
     // describe("General Perfomance", () => {
