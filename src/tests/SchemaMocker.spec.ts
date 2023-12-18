@@ -29,7 +29,7 @@ describe("SchemaMocker", () => {
     test("1", () => {
       const schemaMocker = new SchemaMocker(SchemaSampleJson.components.schemas as never)
 
-      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.BlogListComment as never, DEFAULT)).toEqual({
+      const expected = {
         author: {
           avatar: DEFAULT.string,
           first_name: DEFAULT.string,
@@ -41,6 +41,11 @@ describe("SchemaMocker", () => {
         is_deleted: DEFAULT.boolean,
         replies: Array(DEFAULT.arraySize),
         text: DEFAULT.string,
+      }
+
+      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.BlogListComment as never, DEFAULT)).toEqual({
+        ...expected,
+        replies: [expected]
       })
     })
     test("2", () => {
@@ -65,5 +70,173 @@ describe("SchemaMocker", () => {
         ]
       })
     })
+    // test("3", () => {
+    //   const schemas = {
+    //     "Logo": {
+    //       "type": "object",
+    //       "properties": {
+    //         "url": {
+    //           "type": "string"
+    //         },
+    //         "key": {
+    //           "type": "string"
+    //         }
+    //       },
+    //       "required": [
+    //         "url",
+    //         "key"
+    //       ]
+    //     },
+    //     "Location": {
+    //       "type": "object",
+    //       "properties": {
+    //         "_id": {
+    //           "type": "object"
+    //         },
+    //         "name": {
+    //           "type": "string"
+    //         }
+    //       },
+    //       "required": [
+    //         "_id",
+    //         "name"
+    //       ]
+    //     },
+    //     "Avatar": {
+    //       "type": "object",
+    //       "properties": {
+    //         "url": {
+    //           "type": "string"
+    //         },
+    //         "key": {
+    //           "type": "string"
+    //         }
+    //       },
+    //       "required": [
+    //         "url",
+    //         "key"
+    //       ]
+    //     },
+    //     "User": {
+    //       "type": "object",
+    //       "properties": {
+    //         "_id": {
+    //           "type": "object"
+    //         },
+    //         "username": {
+    //           "type": "string"
+    //         },
+    //         "password": {
+    //           "type": "string"
+    //         },
+    //         "firstName": {
+    //           "type": "string"
+    //         },
+    //         "lastName": {
+    //           "type": "string"
+    //         },
+    //         "role": {
+    //           "enum": [
+    //             1,
+    //             2,
+    //             3,
+    //             4
+    //           ],
+    //           "type": "number"
+    //         },
+    //         "company": {
+    //           "$ref": "#/components/schemas/Company"
+    //         },
+    //         "verified": {
+    //           "type": "boolean"
+    //         },
+    //         "FPToken": {
+    //           "type": "string"
+    //         },
+    //         "NUToken": {
+    //           "type": "string"
+    //         },
+    //         "locations": {
+    //           "type": "array",
+    //           "items": {
+    //             "$ref": "#/components/schemas/Location"
+    //           }
+    //         },
+    //         "changeEmailToken": {
+    //           "type": "string"
+    //         },
+    //         "deleted": {
+    //           "type": "boolean"
+    //         },
+    //         "avatar": {
+    //           "$ref": "#/components/schemas/Avatar"
+    //         }
+    //       },
+    //       "required": [
+    //         "_id",
+    //         "username",
+    //         "password",
+    //         "firstName",
+    //         "lastName",
+    //         "role",
+    //         "company",
+    //         "verified",
+    //         "FPToken",
+    //         "NUToken",
+    //         "locations",
+    //         "changeEmailToken",
+    //         "deleted",
+    //         "avatar"
+    //       ]
+    //     },
+    //     "Company": {
+    //       "type": "object",
+    //       "properties": {
+    //         "logo": {
+    //           "$ref": "#/components/schemas/Logo"
+    //         },
+    //         "name": {
+    //           "type": "string"
+    //         },
+    //         "email": {
+    //           "type": "string"
+    //         },
+    //         "owner": {
+    //           "$ref": "#/components/schemas/User"
+    //         },
+    //         "storage": {
+    //           "type": "number"
+    //         },
+    //         "locations": {
+    //           "type": "array",
+    //           "items": {
+    //             "type": "object"
+    //           }
+    //         },
+    //         "deleted": {
+    //           "type": "boolean"
+    //         },
+    //         "_id": {
+    //           "type": "string"
+    //         }
+    //       },
+    //       "required": [
+    //         "logo",
+    //         "name",
+    //         "email",
+    //         "owner",
+    //         "storage",
+    //         "locations",
+    //         "deleted",
+    //         "_id"
+    //       ]
+    //     },
+    //   }
+
+
+    //   const schemaMocker = new SchemaMocker(schemas as never)
+
+    //   expect(schemaMocker.mock(schemas.User as never, DEFAULT)).toEqual(null)
+    // })
   })
 })

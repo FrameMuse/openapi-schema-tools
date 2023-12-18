@@ -31,24 +31,21 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
     return replacement
   }
 
-  public mock<S extends Schema>(schema: S, replacement: Replacement = SchemaMocker.DEFAULT_REPLACEMENT): ResolveSchema<S, Context> {
-    const mock = (nextSchema: Schema, replacement: Replacement, seenRefs: string[] = []): unknown => {
-      if ("$ref" in nextSchema) {
-        if (seenRefs.includes(nextSchema.$ref)) {
+  public mock<S extends Schema>(rootSchema: S, replacement: Replacement = SchemaMocker.DEFAULT_REPLACEMENT): ResolveSchema<S, Context> {
+    const mock = (schema: Schema, replacement: Replacement, seenRefs: string[] = []): unknown => {
+      if ("$ref" in schema) {
+        if (seenRefs.includes(schema.$ref)) {
           return null
         }
 
-        const deRefedSchema: Schema = this.deRef(nextSchema)
-        if (deRefedSchema === schema) {
-          return null
-        }
+        const deRefedSchema: Schema = this.deRef(schema)
 
-        const mockedSchema = mock(deRefedSchema, replacement, [...seenRefs, nextSchema.$ref])
+        const mockedSchema = mock(deRefedSchema, replacement, [...seenRefs, schema.$ref])
         return mockedSchema
       }
 
-      if ("allOf" in nextSchema) {
-        return nextSchema.allOf.reduce((result, nextSchema) => {
+      if ("allOf" in schema) {
+        return schema.allOf.reduce((result, nextSchema) => {
           const mockedSchema = mock(nextSchema, replacement)
           if (!(mockedSchema instanceof Object)) {
             return result
@@ -58,8 +55,8 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
         }, {})
       }
 
-      if ("anyOf" in nextSchema || "oneOf" in nextSchema) {
-        const oneOf = "oneOf" in nextSchema ? nextSchema.oneOf : nextSchema.anyOf
+      if ("anyOf" in schema || "oneOf" in schema) {
+        const oneOf = "oneOf" in schema ? schema.oneOf : schema.anyOf
 
         const arrayIndex = random(0, oneOf.length - 1)
         const arrayItem = oneOf[arrayIndex]
@@ -72,12 +69,12 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
       }
 
 
-      if (nextSchema.default) {
-        return nextSchema.default
+      if (schema.default) {
+        return schema.default
       }
 
-      if ("properties" in nextSchema) {
-        return handleObject(nextSchema)
+      if ("properties" in schema) {
+        return handleObject(schema)
       }
 
       function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
@@ -90,7 +87,7 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
         }
       }
 
-      switch (nextSchema.type) {
+      switch (schema.type) {
         case "string":
           return this.applyReplacement(replacement.string)
 
@@ -102,12 +99,12 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
           return this.applyReplacement(replacement.boolean)
 
         case "array": {
-          if (nextSchema.items == null) {
+          if (schema.items == null) {
             return []
           }
 
           const arraySize = this.applyReplacement(replacement.arraySize)
-          const arrayItemsMocked = mock(nextSchema.items, replacement, seenRefs)
+          const arrayItemsMocked = mock(schema.items, replacement, seenRefs)
           if (arrayItemsMocked == null) {
             return Array(arraySize)
           }
@@ -116,19 +113,19 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
         }
 
         case "object": {
-          if (nextSchema.properties == null) {
+          if (schema.properties == null) {
             return {}
           }
 
-          return handleObject(nextSchema)
+          return handleObject(schema)
         }
 
         default:
-          throw new UnreachableCodeError({ schema: nextSchema })
+          throw new UnreachableCodeError({ schema: schema })
       }
     }
 
-    return mock(schema, replacement) as never
+    return mock(rootSchema, replacement) as never
   }
 
   private never(schema: Schema) {

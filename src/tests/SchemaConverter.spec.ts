@@ -1,6 +1,8 @@
 import { ZodArray, ZodBoolean, ZodNever, ZodNumber, ZodObject, ZodString } from "zod"
 
 import SchemaConverter from "../SchemaConverter"
+import SchemaMocker from "../SchemaMocker"
+import { SchemaSampleJson } from "./schema.json"
 
 describe("SchemaConverter", () => {
   // test("parse()", () => {
@@ -56,6 +58,34 @@ describe("SchemaConverter", () => {
     test("object shape", () => {
       const converter = new SchemaConverter()
       expect((converter.toZod({ type: "object", properties: { test: { type: "string" } } }) as ZodObject<{ test: ZodString }>).shape.test).toBeInstanceOf(ZodString)
+    })
+
+    test("recursive", () => {
+      const converter = new SchemaConverter(SchemaSampleJson.components.schemas as never)
+      const schema = SchemaSampleJson.components.schemas.BlogListComment as never
+      const schemaConverted = converter.toZod(schema)
+
+      const DEFAULT = {
+        ...SchemaMocker.DEFAULT_REPLACEMENT,
+        boolean: false,
+        arraySize: 1
+      }
+      const expected = {
+        author: {
+          avatar: DEFAULT.string,
+          first_name: DEFAULT.string,
+          id: DEFAULT.number,
+          last_name: DEFAULT.string,
+        },
+        created_at: DEFAULT.string,
+        id: DEFAULT.number,
+        is_deleted: DEFAULT.boolean,
+        replies: [],
+        text: DEFAULT.string,
+      }
+
+      const parsedValue = schemaConverted.parse({ ...expected, replies: [expected] })
+      expect(parsedValue).toEqual(parsedValue)
     })
 
     // describe("General Perfomance", () => {

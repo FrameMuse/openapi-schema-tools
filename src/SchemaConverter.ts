@@ -1,5 +1,5 @@
 import { mapValues } from "lodash-es"
-import { array, boolean, intersection, never, number, object, string, union, ZodType, ZodTypeAny } from "zod"
+import { array, boolean, custom, intersection, never, number, object, string, union, ZodType, ZodTypeAny } from "zod"
 
 import SchemaContext from "./SchemaContext"
 import ResolveSchema from "./type-resolver/resolver"
@@ -10,23 +10,23 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
   constructor(context?: Context, protected options?: { strict?: boolean }) {
     super(context)
   }
-  
-  toZod<S extends Schema>(schema: S): ZodType<ResolveSchema<S>> {
-    // Rename to `baseSchema` to avoid confusion with `schema` parameter.
-    const baseSchema = schema
-    
-    const toZod = (schema: Schema): ZodTypeAny => {
-      if ("$ref" in schema) {
-        const deRefedSchema: Schema = this.deRef(schema)
-        if (deRefedSchema === baseSchema) {
-          return never()
-        }
 
-        return this.toZod(deRefedSchema)
+  toZod<S extends Schema>(rootSchema: S): ZodType<ResolveSchema<S>> {
+    const toZod = (schema: Schema, seenRefs = new Map<string, ZodTypeAny>()): ZodTypeAny => {
+      if ("$ref" in schema) {
+        const oldZodSchema = seenRefs.get(schema.$ref)
+        if (oldZodSchema != null) return oldZodSchema
+
+
+        const deRefedSchema: Schema = this.deRef(schema)
+
+        const refZodSchema = custom((...args) => toZod(deRefedSchema, seenRefs).parse(...args))
+        seenRefs.set(schema.$ref, refZodSchema)
+        return refZodSchema
       }
 
       if ("allOf" in schema) {
-        const items = schema.allOf.map(item => toZod(item))
+        const items = schema.allOf.map(item => toZod(item, seenRefs))
         if (items.length < 2) {
           return items[0] || never()
         }
@@ -36,7 +36,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
       }
       if ("anyOf" in schema || "oneOf" in schema) {
         const anyOf = "anyOf" in schema ? schema.anyOf : schema.oneOf
-        const items = anyOf.map(item => toZod(item))
+        const items = anyOf.map(item => toZod(item, seenRefs))
         if (items.length < 2) {
           return items[0] || never()
         }
@@ -50,8 +50,8 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
       }
 
       function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
-        const properties = mapValues(schemaObject.properties, toZod)
-        const additionalProperties = mapValues(schemaObject.additionalProperties, toZod)
+        const properties = mapValues(schemaObject.properties, value => toZod(value, seenRefs))
+        const additionalProperties = mapValues(schemaObject.additionalProperties, value => toZod(value, seenRefs))
 
         return object({ ...properties, ...additionalProperties })
       }
@@ -70,7 +70,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
             return array(never())
           }
 
-          return array(toZod(schema.items))
+          return array(toZod(schema.items, seenRefs))
         }
 
         case "object": {
@@ -85,7 +85,7 @@ class SchemaConverter<Context extends Schemas = {}> extends SchemaContext<Contex
           throw new UnreachableCodeError({ schema })
       }
     }
-    return toZod(baseSchema)
+    return toZod(rootSchema)
   }
 
   /**
