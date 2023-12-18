@@ -43,7 +43,7 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
           return null
         }
 
-        const mockedSchema = mock(deRefedSchema, replacement, [nextSchema.$ref])
+        const mockedSchema = mock(deRefedSchema, replacement, [...seenRefs, nextSchema.$ref])
         return mockedSchema
       }
 
