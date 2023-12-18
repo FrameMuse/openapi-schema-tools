@@ -19,22 +19,50 @@ export function expectToThrow(fn: () => unknown, error?: Parameters<jest.Matcher
 }
 
 describe("SchemaMocker", () => {
+  const DEFAULT = {
+    ...SchemaMocker.DEFAULT_REPLACEMENT,
+    boolean: false,
+    arraySize: 1
+  }
+
   describe("mock()", () => {
     test("1", () => {
       const schemaMocker = new SchemaMocker(SchemaSampleJson.components.schemas as never)
 
-      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.BlogListComment as never)).toEqual({
+      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.BlogListComment as never, DEFAULT)).toEqual({
         author: {
-          avatar: "[missing value]",
-          first_name: "[missing value]",
-          id: -1,
-          last_name: "[missing value]",
+          avatar: DEFAULT.string,
+          first_name: DEFAULT.string,
+          id: DEFAULT.number,
+          last_name: DEFAULT.string,
         },
-        created_at: "[missing value]",
-        id: -1,
-        is_deleted: false,
-        replies: [],
-        text: "[missing value]",
+        created_at: DEFAULT.string,
+        id: DEFAULT.number,
+        is_deleted: DEFAULT.boolean,
+        replies: Array(DEFAULT.arraySize),
+        text: DEFAULT.string,
+      })
+    })
+    test("2", () => {
+      const schemaMocker = new SchemaMocker(SchemaSampleJson.components.schemas as never)
+
+      expect(schemaMocker.mock(SchemaSampleJson.components.schemas.PaginatedBlogListCommentList as never, DEFAULT)).toEqual({
+        count: DEFAULT.number,
+        results: [
+          {
+            author: {
+              avatar: DEFAULT.string,
+              first_name: DEFAULT.string,
+              id: DEFAULT.number,
+              last_name: DEFAULT.string,
+            },
+            created_at: DEFAULT.string,
+            id: DEFAULT.number,
+            is_deleted: DEFAULT.boolean,
+            replies: Array(DEFAULT.arraySize),
+            text: DEFAULT.string,
+          }
+        ]
       })
     })
   })

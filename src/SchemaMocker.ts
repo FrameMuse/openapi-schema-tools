@@ -81,8 +81,8 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
       }
 
       function handleObject(schemaObject: SchemaObjectLike | SchemaObject) {
-        const properties = mapValues(schemaObject.properties, value => mock(value, replacement))
-        const additionalProperties = mapValues(schemaObject.additionalProperties, value => mock(value, replacement))
+        const properties = mapValues(schemaObject.properties, value => mock(value, replacement, seenRefs))
+        const additionalProperties = mapValues(schemaObject.additionalProperties, value => mock(value, replacement, seenRefs))
 
         return {
           ...properties,
@@ -107,7 +107,7 @@ class SchemaMocker<Context extends Record<string, Schema> = {}> extends SchemaCo
           }
 
           const arraySize = this.applyReplacement(replacement.arraySize)
-          const arrayItemsMocked = mock(nextSchema.items, replacement)
+          const arrayItemsMocked = mock(nextSchema.items, replacement, seenRefs)
           if (arrayItemsMocked == null) {
             return Array(arraySize)
           }
